@@ -1,61 +1,136 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📚 DACS — Website bán sách (Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Đồ án cơ sở: website bán sách xây dựng bằng **Laravel 12**, giao diện **Bootstrap 5** (qua Vite), xác thực bằng **laravel/ui**.
 
-## About Laravel
+> Trạng thái: đang phát triển — đã có trang chủ, đăng ký/đăng nhập, khung dashboard user & admin.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ Chức năng hiện có
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Chức năng | Route | Controller / View |
+| --- | --- | --- |
+| Trang chủ (banner slider, danh mục sách, khối sách nổi bật) | `GET /` | `HomeController@index` → `views/index.blade.php` |
+| Đăng ký / Đăng nhập / Quên mật khẩu | `/login`, `/register`, `/password/*` | `laravel/ui` (Auth::routes) |
+| Dashboard người dùng | `GET /account-dashboard` (cần đăng nhập) | `UserController@index` → `views/user/index.blade.php` |
+| Dashboard quản trị | `GET /admin` (cần đăng nhập + quyền admin) | `UserController@index` → `views/admin/index.blade.php` |
+| Trang chào mặc định | `GET /welcome` | closure trả về `welcome` |
 
-## Learning Laravel
+Phân quyền admin dùng middleware `App\Http\Middleware\AuthAdmin`, kiểm tra `Auth::user()->utype === 'ADM'`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+> ⚠️ **Lưu ý khi tiếp tục phát triển:** cột `utype` chưa có trong migration `create_users_table` và chưa nằm trong `User::$fillable`, nên cần bổ sung (thêm cột + cho phép mass assignment) trước khi middleware `AuthAdmin` hoạt động đúng.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🏗️ Công nghệ
 
-## Laravel Sponsors
+| Thành phần | Công nghệ |
+| --- | --- |
+| Backend | PHP ^8.2, Laravel ^12.0 |
+| Auth scaffolding | `laravel/ui` ^4.6 (Bootstrap) |
+| Frontend | Blade, Bootstrap 5, Vite 7 |
+| CSS tooling | Tailwind CSS 4 (cài sẵn, giao diện chính vẫn dùng Bootstrap) |
+| Database | MySQL / SQLite (cấu hình trong `.env`) |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 📁 Cấu trúc chính
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```
+dacs/web/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── HomeController.php     # trang chủ
+│   │   │   ├── UserController.php     # dashboard user & admin
+│   │   │   ├── AdminController.php    # dashboard admin
+│   │   │   └── Auth/                  # controller do laravel/ui sinh ra
+│   │   └── Middleware/AuthAdmin.php   # kiểm tra quyền admin (utype = ADM)
+│   └── Models/User.php
+├── database/migrations/               # users, cache, jobs
+├── resources/
+│   ├── views/
+│   │   ├── index.blade.php            # trang chủ bán sách
+│   │   ├── home.blade.php
+│   │   ├── admin/index.blade.php
+│   │   ├── user/index.blade.php
+│   │   ├── auth/                      # login, register, verify, passwords
+│   │   └── layouts/app.blade.php
+│   ├── css/app.css
+│   └── js/app.js
+├── routes/
+│   ├── web.php
+│   └── console.php
+├── public/
+├── composer.json
+├── package.json
+└── vite.config.js
+```
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🚀 Cài đặt & chạy
 
-## Code of Conduct
+### Yêu cầu
+- PHP >= 8.2, Composer
+- Node.js >= 18
+- MySQL (hoặc dùng SQLite cho nhanh)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Các bước
 
-## Security Vulnerabilities
+```bash
+# 1. Cài dependency
+composer install
+npm install
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# 2. Tạo file môi trường
+cp .env.example .env
+php artisan key:generate
 
-## License
+# 3. Cấu hình DB trong .env (ví dụ MySQL)
+#    DB_CONNECTION=mysql
+#    DB_DATABASE=dacs
+#    DB_USERNAME=root
+#    DB_PASSWORD=
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# 4. Tạo bảng
+php artisan migrate
+
+# 5. Chạy (2 terminal)
+npm run dev
+php artisan serve
+```
+
+Mở http://127.0.0.1:8000
+
+Hoặc chạy tất cả bằng một lệnh:
+
+```bash
+composer run dev
+```
+
+### Tạo tài khoản admin
+
+Sau khi migrate, thêm cột `utype` cho bảng `users` và đặt giá trị `ADM` cho tài khoản admin, ví dụ:
+
+```bash
+php artisan tinker
+```
+
+```php
+// sau khi đã thêm cột utype
+User::where('email', 'admin@example.com')->update(['utype' => 'ADM']);
+```
+
+---
+
+## 🔐 Bảo mật
+
+- File `.env` (chứa `APP_KEY`, thông tin DB, mail) **không** được commit — đã có trong `.gitignore`.
+- Không commit `vendor/`, `node_modules/`, `public/build`, `storage/logs`.
+
+---
+
+## 📄 Giấy phép
+
+Dự án phục vụ mục đích học tập (đồ án cơ sở).
